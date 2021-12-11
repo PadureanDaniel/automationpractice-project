@@ -15,7 +15,7 @@ public class CreateAnAccountPage {
     private WebElement invalidEmailErrorMessage;
 
     @FindBy(id = "email_create")
-    private WebElement inputEmailAddress;
+    public static WebElement inputEmailAddress;
 
     @FindBy(id = "SubmitCreate")
     private WebElement createAnAccountButton;
@@ -56,12 +56,6 @@ public class CreateAnAccountPage {
         String usedEmail = usedEmailErrorMessage.getText();
         return usedEmail;
 
-
-    }
-
-    public void deleteEmail(){
-
-        inputEmailAddress.clear();
 
     }
 
