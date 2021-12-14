@@ -1,13 +1,25 @@
 package pages;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import util.DeleteElementText;
 
+import java.lang.reflect.UndeclaredThrowableException;
+import java.nio.channels.WritableByteChannel;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
 
 public class SignInPage {
 
@@ -54,9 +66,9 @@ public class SignInPage {
     @FindBy(id = "city")
     private WebElement cityField;
     @FindBy(id = "id_state")
-    private WebElement stateDropdown;
+    public WebElement stateDropdown;
     @FindBy(id = "postcode")
-    private WebElement postalCodeField;
+    public WebElement postalCodeField;
     @FindBy(id = "id_country")
     private WebElement countryDropdown;
     @FindBy(id = "other")
@@ -68,7 +80,25 @@ public class SignInPage {
     @FindBy(id = "alias")
     private WebElement addressAliasField;
     @FindBy(id = "submitAccount")
-    private WebElement submitAccount;
+    public WebElement submitAccount;
+
+    // Error Messages
+
+    @FindBy(xpath = "//li[contains(text(), \"You must register at least one phone number.\")]")
+    public WebElement phoneNumberErrorMessage;
+    @FindBy(xpath = "//li[contains(text(),\"This country requires you to choose a State.\")]")
+    public WebElement countryErrorMessage;
+    @FindBy(xpath = "//li[contains(text(),\"The Zip/Postal code you've entered is invalid. It \")]")
+    public WebElement postalCodeErrorMessage;
+//    @FindBy(xpath = "//b[contains(text(), \"lastname\")]")
+//    private WebElement lastNameErrorMessage;
+//
+//    @FindBy(xpath = "//b[contains(text(), \"firstname\")]")
+//    private WebElement firstNameErrorMessage;
+
+
+
+
 
     protected WebDriver driver;
     public SignInPage(WebDriver driver) {
@@ -78,18 +108,22 @@ public class SignInPage {
 
     }
 
-    public void fillYourPersonalInformation(String firstname, String lastname, String password, String firstNameAddres, String lastNameAddress, String company, String address, String address2, String city, String postalCode, String additionalInfo, String homePhone, String mobilePhone, String alias) {
+    public void fillYourPersonalInformation(String firstname, String lastname, String password, String firstNameAddres, String lastNameAddress, String company, String address, String city, String postalCode, String additionalInfo, String homePhone, String mobilePhone, String alias) {
 
         firstName.sendKeys(firstname);
         lastName.sendKeys(lastname);
         passwordField.sendKeys(password);
-        if(firstName2.getText() == firstNameAddres)
+        if(firstName2.getText() != firstNameAddres) {
+            firstName2.clear();
             firstName2.sendKeys(firstNameAddres);
-        if(lastName2.getText() == lastNameAddress)
+        }
+        if(lastName2.getText() != lastNameAddress) {
+            lastName2.clear();
             lastName2.sendKeys(lastNameAddress);
+        }
         companyField.sendKeys(company);
         addressField.sendKeys(address);
-        addressField2.sendKeys(address2);
+        //addressField2.sendKeys(address2);
         cityField.sendKeys(city);
         postalCodeField.sendKeys(postalCode);
         additionalInfoField.sendKeys(additionalInfo);
@@ -97,8 +131,6 @@ public class SignInPage {
         mobilePhoneField.sendKeys(mobilePhone);
         DeleteElementText.deleteElementText(addressAliasField);
         addressAliasField.sendKeys(alias);
-
-        submitAccount.click();
 
 
     }
@@ -126,9 +158,19 @@ public class SignInPage {
     public void selectYearOfBirth(String year){
 
         Select dobDropDown = new Select(dateOfbirthYear);
-        dobDropDown.selectByValue(year);
+
+            if (Integer.parseInt(year) <= 2003) {
+
+                dobDropDown.selectByValue(year);
+
+            } else {
+                assertThat(Integer.parseInt(year), is(lessThan(2004)));
+            }
+
+
 
     }
+
 
     public void selectNewsletterCheckbox(){
         if(!newsletter.isSelected())
@@ -147,34 +189,36 @@ public class SignInPage {
 
     }
 
+    public void selectCountry(String country){
 
-    public String checkAtLeastOnePhoneNumberErrorMessage() {
+        Select selectCountryDOB = new Select(countryDropdown);
+        selectCountryDOB.selectByVisibleText(country);
+
     }
 
-    public String checkLastNameRequiredMessage() {
+    public void editEmail(String email){
+
+        DeleteElementText.deleteElementText(emailField);
+        emailField.sendKeys(email);
+
     }
 
-    public String checkFirstNameRequiredMessage() {
+    public String checkAllErrorsMessage(){
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+        wait.until(ExpectedConditions.visibilityOf(driver.findElement(By.xpath("//*[@id = 'center_column']/div"))));
+        WebElement parentElement = driver.findElement(By.xpath("//*[@id = 'center_column']/div/ol"));
+        String allText = parentElement.getText();
+        System.out.println(allText);
+        return allText;
+
     }
 
-    public String checkEmailRequiredMessage() {
+    public void submitAccount(){
+
+        submitAccount.click();
+
     }
 
-    public String checkPasswordRequiredMessage() {
-    }
 
-    public String checkAliasRequiredMessage() {
-    }
-
-    public String checkAddressRequiredMessage() {
-    }
-
-    public String checkCityRequiredMessage() {
-    }
-
-    public String checkCountryInvalidMessage() {
-    }
-
-    public String checkCountryErrorMessage() {
-    }
 }
